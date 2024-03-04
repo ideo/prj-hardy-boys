@@ -1,0 +1,5 @@
+scraper_one:
+  - Hello! This lil' app will scrape search results from [Contractor Talk](https://www.contractortalk.com/). Enter the words you'd like to search for below. 
+
+scraper_two:
+  - When ready, hit scrape. The app will first grab each page of search results, and then go back and scrape each post from those pages. Enjoy!

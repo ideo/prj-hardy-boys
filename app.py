@@ -14,4 +14,6 @@ st.write("")
 st.write("")
 st.markdown("---")
 st.header("Analyze")
-lg.dataframe_selector()
+df = lg.dataframe_selector()
+if df is not None:
+    st.dataframe(df)

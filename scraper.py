@@ -39,10 +39,9 @@ class Scraper:
             df = pd.DataFrame(columns=["post link"], data=page_links)
             results = pd.concat([results, df])
 
-        # filename = "+".join(search_terms) + ".csv"
         filename = f"{search_terms}.csv"
         filepath = DATA_DIR / filename
-        df.to_csv(filepath)
+        results.to_csv(filepath)
         return filepath
     
 
