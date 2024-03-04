@@ -1,10 +1,12 @@
 import os
+from itertools import chain
 
 import streamlit as st
 import pandas as pd
 
 from scraper import Scraper
-from directories import DATA_DIR
+from topic_modeler import get_embeddings
+from directories import DATA_DIR, EMBEDDINGS_DIR
 from app import utils
 
 
@@ -47,8 +49,36 @@ def dataframe_selector():
         selections = st.multiselect("Choose Scraping Results", options=saved_results)
     
     if len(selections):
-        df = pd.concat([pd.read_csv(DATA_DIR / fn) for fn in selections])
+        df = pd.concat([pd.read_csv(DATA_DIR / fn) for fn in selections], ignore_index=True)
         df.drop(columns=[col for col in df.columns if "Unnamed" in col], inplace=True)
+        # df.drop_duplicates(inplace=True)
         with col2:
             st.metric("Posts", df.shape[0])
-        return df
+
+        search_terms = [x.replace(".csv", "").split("+") for x in selections]
+        search_terms = sorted(list(set(chain.from_iterable(search_terms))))
+        embeddings_filename = "+".join(search_terms) + ".pkl"
+
+        return df, embeddings_filename
+    return None, None
+    
+
+def fetch_embeddings(df, embeddings_filename):
+    """Fetch embeddings if they've not already been found"""
+    filepath = EMBEDDINGS_DIR / embeddings_filename
+
+    if not os.path.exists(filepath):
+        _, cntr, _ = st.columns([2.5,2,2.5])
+        with cntr:
+            st.write("")
+            label = f"Fetch Embeddings"
+            clicked = st.button(label)
+
+        if clicked:
+            embeddings = get_embeddings(df)
+            embeddings.to_pickle(filepath)
+
+    else:
+        embeddings = pd.read_pickle(filepath)
+    
+    return embeddings

@@ -11,6 +11,10 @@ pandas = "^2.2.1"
 streamlit = "^1.31.1"
 stqdm = "^0.0.5"
 pyyaml = "^6.0.1"
+python-dotenv = "^1.0.1"
+openai = "^1.13.3"
+scikit-learn = "^1.4.1.post1"
+umap-learn = "^0.5.5"
 
 
 [tool.poetry.group.scraper.dependencies]
@@ -22,6 +26,9 @@ tqdm = "^4.66.2"
 
 [tool.poetry.group.dev.dependencies]
 watchdog = "^4.0.0"
+jupyterlab = "^4.1.2"
+ipykernel = "^6.29.3"
+matplotlib = "^3.8.3"
 
 [build-system]
 requires = ["poetry-core"]

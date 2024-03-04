@@ -28,16 +28,16 @@ class Scraper:
         search_id = random.randint(111111, 999999)
 
         search_url = self._format_search_url(search_terms, search_id)
-        page_links, total_page_count = self._scrape_search_result_page_links(search_url)
+        page_links, total_page_count, search_url = self._scrape_search_result_page_links(search_url)
         results = pd.DataFrame(columns=["post link"], data=page_links)
 
         _range = range(2, total_page_count+1)
         desc = f"Scraping {total_page_count} pages of results"
         for page_count in tqdm(_range, desc=desc):
-            search_url = self._format_search_url(search_terms, search_id, page=page_count)
-            page_links, _ = self._scrape_search_result_page_links(search_url)
+            # search_url = self._format_search_url(search_terms, search_id, page=page_count)
+            page_links, _, search_url = self._scrape_search_result_page_links(search_url)
             df = pd.DataFrame(columns=["post link"], data=page_links)
-            results = pd.concat([results, df])
+            results = pd.concat([results, df], ignore_index=True)
 
         filename = f"{search_terms}.csv"
         filepath = DATA_DIR / filename
@@ -48,7 +48,7 @@ class Scraper:
     def scrape_posts_from_result_links(self, filepath):
         df = pd.read_csv(filepath)
         tqdm.pandas(desc=f"Scraping {df.shape[0]} posts")
-        df[["title", "text"]] = df["post link"].progress_apply(lambda x: self._get_post_contents(x))
+        df[["title", "text", "url"]] = df["post link"].progress_apply(lambda x: self._get_post_contents(x))
         df.to_csv(filepath)
 
 
@@ -63,7 +63,7 @@ class Scraper:
         text = post_div.find("article", attrs={"qid": "post-text"}).text.strip()
         
         # return title, text
-        return pd.Series([title, text])
+        return pd.Series([title, text, post_url])
 
 
     def _format_search_url(self, search_terms, search_id, page=1):
@@ -76,7 +76,7 @@ class Scraper:
             params = f"?q={search_terms}&o=relevance"
             search_url = urljoin(search_url, params)
 
-        print(search_url)
+        # print(search_url)
         return search_url
     
 
@@ -86,14 +86,20 @@ class Scraper:
         page_links = [post["href"] for post in posts]
 
         # Should we continue
-        # next_page_btn = soup.find("a", attrs={"qid": "page-nav-next-button"})
-        # next_page_exists = next_page_btn["aria-disabled"] == "false"
+        next_page_btn = soup.find("a", attrs={"qid": "page-nav-next-button"})
+        next_page_exists = next_page_btn["aria-disabled"] == "false"
+        if next_page_exists:
+            next_page_link = urljoin(self.base_url, next_page_btn["href"])
+        else:
+            next_page_link = None
+
+        print(next_page_link)
 
         # How mnay pages are there?
         last_page_btn = soup.find_all("a", attrs={"qid": "page-nav-other-page"})[-1]
         total_page_count = int(last_page_btn.text.strip())
 
-        return page_links, total_page_count
+        return page_links, total_page_count, next_page_link
 
 
 
