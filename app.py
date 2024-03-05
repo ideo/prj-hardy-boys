@@ -20,4 +20,5 @@ if df is not None:
     embeddings = lg.fetch_embeddings(df, embeddings_filename)
 
     if embeddings is not None:
-        lg.visualize_topic_clusters(embeddings, df)
+        chart_df = lg.visualize_topic_clusters(embeddings, df)
+        lg.expore_topics(chart_df)

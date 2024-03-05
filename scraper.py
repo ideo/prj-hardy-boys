@@ -34,9 +34,10 @@ class Scraper:
         _range = range(total_page_count)
         desc = f"Scraping {total_page_count} pages of results"
         for _ in tqdm(_range, desc=desc):
-            page_links, _, search_url = self._scrape_search_result_page_links(search_url)
-            df = pd.DataFrame(columns=["post link"], data=page_links)
-            results = pd.concat([results, df], ignore_index=True)
+            if search_url is not None:
+                page_links, _, search_url = self._scrape_search_result_page_links(search_url)
+                df = pd.DataFrame(columns=["post link"], data=page_links)
+                results = pd.concat([results, df], ignore_index=True)
 
         filename = f"{search_terms}.csv"
         filepath = DATA_DIR / filename
