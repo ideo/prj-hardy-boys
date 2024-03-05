@@ -163,17 +163,17 @@ def scatter_plot(chart_df):
     st.altair_chart(chart, use_container_width=True)
 
 
-def expore_topics(chart_df):
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write("Read through the posts that have been clustered together.")
-    with col2:
-        label = "Choose a Topic to Explore"
-        options = chart_df["Topic Label"].value_counts().index
-        selection = st.selectbox(label, sorted(options))
+def expore_topics(center_column, chart_df):
+    with center_column:
+        # label = "Choose a Topic to Explore"
+        col1, _ = st.columns([2,2])
+        with col1:
+            label = "Read through the posts that have been clustered together."
+            options = chart_df["Topic Label"].value_counts().index
+            selection = st.selectbox(label, sorted(options))
 
     display_df = chart_df[chart_df["Topic Label"] == selection].copy()
     display_df.reset_index(inplace=True)
-    display_df.drop(columns=["post link", "X", "Y"], inplace=True)
+    display_df.drop(columns=["post link", "X", "Y", "Topic Label"], inplace=True)
     display_df.set_index("title", inplace=True)
     st.dataframe(display_df)

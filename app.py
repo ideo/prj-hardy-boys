@@ -31,4 +31,4 @@ with cntr:
             open_ai_clusters = True
 
 if open_ai_clusters:
-    lg.expore_topics(chart_df)
+    lg.expore_topics(cntr, chart_df)
