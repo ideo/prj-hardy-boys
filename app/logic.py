@@ -118,13 +118,20 @@ def visualize_topic_clusters(embeddings, source_data):
     with st.spinner("Clustering Topics..."):
         topic_labels = model.cluster(reduction, n_clusters=n_clusters)
 
-    source = pd.DataFrame(reduction)
-    source["Topic Label"] = topic_labels
-    chart = alt.Chart(source).mark_circle().encode(
+    # Make 
+    chart_df = pd.DataFrame(reduction, index=embeddings.index)
+    chart_df["Topic Label"] = topic_labels
+    chart_df = chart_df.join(source_data.set_index("post link"))
+    # st.dataframe(chart_df)
+    # st.dataframe(embeddings)
+
+    chart = alt.Chart(chart_df).mark_circle().encode(
         x=alt.X("0", title=None, axis=alt.Axis(labels=False)),
         y=alt.Y("1", title=None, axis=alt.Axis(labels=False)),
         color=alt.Color("Topic Label:N", legend=None),
-    )
+        href="url",
+        tooltip=["title", "text"],
+    )#.properties(title="Posts Mapped by Similarity")
     st.altair_chart(chart, use_container_width=True)
 
     
