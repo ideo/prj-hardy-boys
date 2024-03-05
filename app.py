@@ -16,6 +16,8 @@ st.markdown("---")
 st.header("Analyze")
 df, embeddings_filename = lg.dataframe_selector()
 if df is not None:
-    st.dataframe(df)
+    lg.display_scraped_data(df)
     embeddings = lg.fetch_embeddings(df, embeddings_filename)
-    st.dataframe(embeddings)
+
+    if embeddings is not None:
+        lg.visualize_topic_clusters(embeddings, df)

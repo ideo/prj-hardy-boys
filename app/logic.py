@@ -3,8 +3,10 @@ from itertools import chain
 
 import streamlit as st
 import pandas as pd
+import altair as alt
 
 from scraper import Scraper
+from topic_modeler import Topic_Modeler
 from topic_modeler import get_embeddings
 from directories import DATA_DIR, EMBEDDINGS_DIR
 from app import utils
@@ -43,6 +45,7 @@ def scrape_contractor_talk():
 
 
 def dataframe_selector():
+    st.write("Step #1: Select the datasets you'd like to analyze.")
     col1, _, col2 = st.columns([6,1,2])
     with col1:
         saved_results = [fn for fn in os.listdir(DATA_DIR) if fn.split(".")[-1] == "csv"]
@@ -61,10 +64,22 @@ def dataframe_selector():
 
         return df, embeddings_filename
     return None, None
+
+
+def display_scraped_data(df):
+    """
+    The concatenated dataframe returned by `dataframe_selector`
+    """
+    display_df = df.copy().drop(columns=["post link"])
+    st.dataframe(display_df)
     
 
 def fetch_embeddings(df, embeddings_filename):
     """Fetch embeddings if they've not already been found"""
+    st.write("")
+    st.write("Step #2: Fetch embeddings from OpenAI.")
+
+    embeddings = None
     filepath = EMBEDDINGS_DIR / embeddings_filename
 
     if not os.path.exists(filepath):
@@ -80,5 +95,44 @@ def fetch_embeddings(df, embeddings_filename):
 
     else:
         embeddings = pd.read_pickle(filepath)
+        st.success("Embeddings Retrieved and Saved!")
     
     return embeddings
+
+
+def visualize_topic_clusters(embeddings, source_data):
+    """Reduce with UMAP and cluster"""
+    st.write("")
+    st.write("Step #3: Cluster the embedding vectors.")
+
+    with st.spinner("Reducing Embedding Vectors..."):
+        model = Topic_Modeler(embeddings, source_data)
+        reduction = model.reduce_dimensions()
+        topic_labels = model.cluster(reduction, n_clusters=1)
+
+    col1, _ = st.columns(2)
+    with col1:
+        label = "How Many Clusters Do You See?"
+        n_clusters = st.number_input(label, value=1, min_value=1, max_value=10)
+
+    with st.spinner("Clustering Topics..."):
+        topic_labels = model.cluster(reduction, n_clusters=n_clusters)
+
+    source = pd.DataFrame(reduction)
+    source["Topic Label"] = topic_labels
+    chart = alt.Chart(source).mark_circle().encode(
+        x=alt.X("0", title=None, axis=alt.Axis(labels=False)),
+        y=alt.Y("1", title=None, axis=alt.Axis(labels=False)),
+        color=alt.Color("Topic Label:N", legend=None),
+    )
+    st.altair_chart(chart, use_container_width=True)
+
+    
+
+
+# def cluster(embeddings, source_data, n_clusters=4):
+#     with st.spinner("Clustering Topics...")
+#         model = Topic_Modeler(embeddings, source_data)
+#         reduction = model.reduce_dimensions()
+#         topic_labels = model.cluster(reduction, n_clusters=4)
+#         return reduction, topic_labels
