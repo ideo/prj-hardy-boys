@@ -106,7 +106,9 @@ def fetch_embeddings(df, embeddings_filename):
         embeddings = pd.read_pickle(filepath)
         st.success("Embeddings Retrieved and Saved!")
     
-    embeddings = embeddings[embeddings.notnull().any(axis=1)]
+    if embeddings is not None:
+        embeddings = embeddings[embeddings.notnull().any(axis=1)]
+    
     return embeddings
 
 
@@ -127,14 +129,15 @@ def visualize_topic_clusters(embeddings, source_data):
     return chart_df
 
 
-def specify_number_of_clusters(key):
+def specify_number_of_clusters(key, include_instructions=True):
     col1, col2 = st.columns(2)
-    with col1:
-        msg = """
-        Clustering requires some visual inspection. 
-        Specify how many clusters you spot in the similarity map below.
-        """
-        st.write(msg)
+    if include_instructions:
+        with col1:
+            msg = """
+            Clustering requires some visual inspection. 
+            Specify how many clusters you spot in the similarity map below.
+            """
+            st.write(msg)
     with col2:
         label = "How Many Clusters Do You See?"
         n_clusters = st.number_input(label, key=key,
@@ -172,7 +175,7 @@ def scatter_plot(chart_df, title):
                 ),
         # color=alt.Color("Topic Label:N", legend=alt.Legend(orient="bottom")),
         color=alt.Color("Topic Label:N"),
-        href="url:N",
+        # href="url:N",
         tooltip=["title", "text"],
     ).properties(title=title)
     st.write("")
@@ -220,7 +223,7 @@ def tf_idf_topics(source_data, tfidf_filename):
     tfidf = TFIDF_Topic_Modeler(tfidf_filename)
     umap_nmf_reduction = tfidf.attempt_to_find_topics(source_data)
 
-    n_clusters = specify_number_of_clusters("tfidf")
+    n_clusters = specify_number_of_clusters("tfidf", include_instructions=False)
     title = "Similarity Map from TF-IDF Embeddings"
     model = Topic_Modeler()
     chart_df = interactively_cluster(umap_nmf_reduction, model, n_clusters, source_data, source_data["post link"])
