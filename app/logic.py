@@ -102,6 +102,7 @@ def fetch_embeddings(df, embeddings_filename):
         embeddings = pd.read_pickle(filepath)
         st.success("Embeddings Retrieved and Saved!")
     
+    embeddings = embeddings[embeddings.notnull().any(axis=1)]
     return embeddings
 
 

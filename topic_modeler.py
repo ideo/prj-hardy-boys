@@ -86,6 +86,9 @@ class TFIDF_Topic_Modeler:
         pattern = "[ \t]{2,}"
         cleaned_text = re.sub(pattern, " ", cleaned_text)
 
+        pattern = "[ \t]{2,}"
+        cleaned_text = re.sub(pattern, " ", cleaned_text)
+
         return cleaned_text
 
 
