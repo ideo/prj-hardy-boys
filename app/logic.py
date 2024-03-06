@@ -6,7 +6,7 @@ import pandas as pd
 import altair as alt
 
 from scraper import Scraper
-from topic_modeler import Topic_Modeler
+from topic_modeler import Topic_Modeler, TFIDF_Topic_Modeler
 from topic_modeler import get_embeddings
 from directories import DATA_DIR, EMBEDDINGS_DIR
 from app import utils
@@ -84,7 +84,7 @@ def display_scraped_data(df):
 def fetch_embeddings(df, embeddings_filename):
     """Fetch embeddings if they've not already been found"""
     st.write("")
-    st.markdown("##### Step #2: Fetch embeddings from OpenAI.")
+    st.markdown("##### Step #2: Fetch embeddings from OpenAI")
 
     embeddings = None
     filepath = EMBEDDINGS_DIR / embeddings_filename
@@ -108,13 +108,21 @@ def fetch_embeddings(df, embeddings_filename):
 def visualize_topic_clusters(embeddings, source_data):
     """Reduce with UMAP and cluster"""
     st.write("")
-    st.markdown("##### Step #3: Cluster the embedding vectors.")
+    st.markdown("##### Step #3: Cluster the embedding vectors")
 
+    n_clusters = specify_number_of_clusters("openai")
     with st.spinner("Reducing Embedding Vectors..."):
         model = Topic_Modeler(embeddings, source_data)
         reduction = model.reduce_dimensions()
         topic_labels = model.cluster(reduction, n_clusters=1)
 
+    title = "Similarity Map from OpenAI Embeddings"
+    chart_df = interactively_cluster(reduction, model, n_clusters, source_data, embeddings.index)
+    scatter_plot(chart_df, title)
+    return chart_df
+
+
+def specify_number_of_clusters(key):
     col1, col2 = st.columns(2)
     with col1:
         msg = """
@@ -124,20 +132,23 @@ def visualize_topic_clusters(embeddings, source_data):
         st.write(msg)
     with col2:
         label = "How Many Clusters Do You See?"
-        n_clusters = st.number_input(label, value=1, min_value=1, max_value=10)
+        n_clusters = st.number_input(label, key=key,
+                                     value=1, min_value=1, max_value=10)
+    return n_clusters
 
+
+def interactively_cluster(reduction, model, n_clusters, source_data, original_index):
     with st.spinner("Clustering Topics..."):
         topic_labels = model.cluster(reduction, n_clusters=n_clusters)
 
-    chart_df = pd.DataFrame(reduction, index=embeddings.index)
+    chart_df = pd.DataFrame(reduction, index=original_index)
     chart_df.rename(columns={0:"X", 1:"Y"}, inplace=True)
     chart_df["Topic Label"] = topic_labels
     chart_df = chart_df.join(source_data.set_index("post link"))
-    scatter_plot(chart_df)
     return chart_df
 
 
-def scatter_plot(chart_df):
+def scatter_plot(chart_df, title):
     """Altair scatter plot"""
     x_min = chart_df["X"].min() - chart_df["X"].mean()*0.1
     x_max = chart_df["X"].max() + chart_df["X"].mean()*0.1
@@ -158,35 +169,55 @@ def scatter_plot(chart_df):
         color=alt.Color("Topic Label:N"),
         href="url",
         tooltip=["title", "text"],
-    ).properties(title="Similarity Map from OpenAI Embeddings")
+    ).properties(title=title)
     st.write("")
     st.altair_chart(chart, use_container_width=True)
 
 
-def expore_topics(center_column, chart_df):
+def expore_topics(center_column, chart_df, key):
     with center_column:
         # label = "Choose a Topic to Explore"
         col1, _, col2 = st.columns([2,1,1])
         with col1:
             label = "Read through the posts that have been clustered together."
             options = chart_df["Topic Label"].value_counts().index
-            selection = st.selectbox(label, sorted(options))
+            selection = st.selectbox(label, sorted(options), key=f"sb-{key}")
         
         display_df = chart_df[chart_df["Topic Label"] == selection].copy()
         display_df.reset_index(inplace=True)
-        display_df.drop(columns=["post link", "X", "Y"], inplace=True)
+        to_drop = [col for col in ["post link", "X", "Y"] if col in display_df.columns]
+        display_df.drop(columns=to_drop, inplace=True)
         display_df.set_index("title", inplace=True)
         with col2:
             st.write("")
             filename = "contractortalk-posts-OpenAI-embeddings.csv"
-            download_dataframe_as_csv(display_df, filename)
+            download_dataframe_as_csv(display_df, filename, key)
 
     display_df.drop(columns=["Topic Label"], inplace=True)    
     st.dataframe(display_df)
 
 
-def download_dataframe_as_csv(df, filename):
+def download_dataframe_as_csv(df, filename, key):
+    key = f"dwnld-btn-{key}"
     _csv = df.to_csv(index=False).encode('utf-8')
     label = "Download Posts"
     mime_type = "text/csv"
-    st.download_button(label, _csv, filename, mime_type)
+    st.download_button(label, _csv, filename, mime_type, key=key)
+
+
+def tf_idf_topics(source_data):
+    st.write("")
+    st.write("")
+    st.markdown("##### Step #4: Compare to TF-IDF clusters")
+    write_text("tfidf")
+
+    # TFIDF
+    tfidf = TFIDF_Topic_Modeler()
+    umap_nmf_reduction = tfidf.attempt_to_find_topics(source_data)
+
+    n_clusters = specify_number_of_clusters("tfidf")
+    title = "Similarity Map from TF-IDF Embeddings"
+    model = Topic_Modeler()
+    chart_df = interactively_cluster(umap_nmf_reduction, model, n_clusters, source_data, source_data["post link"])
+    scatter_plot(chart_df, title)
+    return chart_df

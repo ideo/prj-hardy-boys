@@ -33,6 +33,13 @@ class TFIDF_Topic_Modeler:
 
     ### Embeddings
 
+    def attempt_to_find_topics(self, df, columns=["title", "text"]):
+        vectors = self.vectorize(df, columns=columns)
+        nmf_reduction = self.reduce_dimensions(vectors)
+        further_reduction = self.reduce_to_2d(nmf_reduction)
+        return further_reduction
+
+
     def vectorize(self, df, columns=["title", "text"]):
         """
         Clean text and create the TF-IDF vectors
@@ -49,11 +56,10 @@ class TFIDF_Topic_Modeler:
         return reduction
     
 
-    def cluster(self, reduction):
-        umap_reducer = umap.UMAP()
+    def reduce_to_2d(self, reduction):
+        umap_reducer = umap.UMAP(random_state=42)
         futher_reduction = umap_reducer.fit_transform(reduction)
         return futher_reduction
-
 
 
     def _clean_text(self, df, columns=["title", "text"]):
@@ -78,7 +84,7 @@ class TFIDF_Topic_Modeler:
 
 
 class Topic_Modeler:
-    def __init__(self, embeddings, source_data):
+    def __init__(self, embeddings=None, source_data=None):
         # self.embeddings_filepath = embeddings_filepath
         # self.source_data_filepath = source_data_filepath
         # self.embeddings = pd.read_pickle(embeddings_filepath)

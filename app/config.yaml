@@ -5,3 +5,7 @@ scraper:
 analyze:
   - Here, we will attempt to cluster posts togetether based on their similarity. We'll first try a sophisticated method, requesting embedding vectors from OpenAI. These are the same numerical representations that power ChatGPT.
   - We'll also compare those results to a more basic technique, creating vectors that count how often a word appears in a post versus how often it appears in all posts.
+
+tfidf:
+  - Term Frequency–Inverse Document Frequency (TF-IDF) is a more "traditional" metric for quantifying text data, one that predates large language models (LLMs). It measures the ratio of how often a word appears in a particular document versus how often it appears in all documents.
+  - The OpenAI embeddings retain knowledge their models have learned from all of the text data they have ever consumed. This simpler method compares these scraped posts only to themselves.
