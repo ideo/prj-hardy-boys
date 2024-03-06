@@ -175,7 +175,7 @@ def scatter_plot(chart_df, title):
                 ),
         # color=alt.Color("Topic Label:N", legend=alt.Legend(orient="bottom")),
         color=alt.Color("Topic Label:N"),
-        # href="url:N",
+        href="url:N",
         tooltip=["title", "text"],
     ).properties(title=title)
     st.write("")
