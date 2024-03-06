@@ -166,14 +166,27 @@ def scatter_plot(chart_df):
 def expore_topics(center_column, chart_df):
     with center_column:
         # label = "Choose a Topic to Explore"
-        col1, _ = st.columns([2,2])
+        col1, _, col2 = st.columns([2,1,1])
         with col1:
             label = "Read through the posts that have been clustered together."
             options = chart_df["Topic Label"].value_counts().index
             selection = st.selectbox(label, sorted(options))
+        
+        display_df = chart_df[chart_df["Topic Label"] == selection].copy()
+        display_df.reset_index(inplace=True)
+        display_df.drop(columns=["post link", "X", "Y"], inplace=True)
+        display_df.set_index("title", inplace=True)
+        with col2:
+            st.write("")
+            filename = "contractortalk-posts-OpenAI-embeddings.csv"
+            download_dataframe_as_csv(display_df, filename)
 
-    display_df = chart_df[chart_df["Topic Label"] == selection].copy()
-    display_df.reset_index(inplace=True)
-    display_df.drop(columns=["post link", "X", "Y", "Topic Label"], inplace=True)
-    display_df.set_index("title", inplace=True)
+    display_df.drop(columns=["Topic Label"], inplace=True)    
     st.dataframe(display_df)
+
+
+def download_dataframe_as_csv(df, filename):
+    _csv = df.to_csv(index=False).encode('utf-8')
+    label = "Download Posts"
+    mime_type = "text/csv"
+    st.download_button(label, _csv, filename, mime_type)
