@@ -205,14 +205,14 @@ def download_dataframe_as_csv(df, filename, key):
     st.download_button(label, _csv, filename, mime_type, key=key)
 
 
-def tf_idf_topics(source_data):
+def tf_idf_topics(source_data, tfidf_filename):
     st.write("")
     st.write("")
     st.markdown("##### Step #4: Compare to TF-IDF clusters")
     write_text("tfidf")
 
     # TFIDF
-    tfidf = TFIDF_Topic_Modeler()
+    tfidf = TFIDF_Topic_Modeler(tfidf_filename)
     umap_nmf_reduction = tfidf.attempt_to_find_topics(source_data)
 
     n_clusters = specify_number_of_clusters("tfidf")

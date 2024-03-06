@@ -36,9 +36,9 @@ if open_ai_clusters:
 
     _, cntr, _ = st.columns([2,6,2])
     with cntr:
-        chart_df = lg.tf_idf_topics(df)
+        tfidf_filename = "tfidf_" + embeddings_filename
+        chart_df = lg.tf_idf_topics(df, tfidf_filename)
         tfidf_clusters = True
 
 if tfidf_clusters:
-    print(chart_df)
     lg.expore_topics(cntr, chart_df, "tfidf")

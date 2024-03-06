@@ -15,7 +15,7 @@ from sklearn.cluster import SpectralClustering
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import NMF
 
-from directories import DATA_DIR
+from directories import DATA_DIR, EMBEDDINGS_DIR
 
 
 load_dotenv()
@@ -27,17 +27,24 @@ LARGE_MODEL = "text-embedding-3-large"
 
 
 class TFIDF_Topic_Modeler:
-    def __init__(self):
-        pass
-
+    def __init__(self, tfidf_filename):
+        self.tfidf_filepath = EMBEDDINGS_DIR / tfidf_filename
 
     ### Embeddings
 
     def attempt_to_find_topics(self, df, columns=["title", "text"]):
-        vectors = self.vectorize(df, columns=columns)
-        nmf_reduction = self.reduce_dimensions(vectors)
-        further_reduction = self.reduce_to_2d(nmf_reduction)
-        return further_reduction
+        if not os.path.exists(self.tfidf_filepath):
+            vectors = self.vectorize(df, columns=columns)
+            nmf_reduction = self.reduce_dimensions(vectors)
+            data = self.reduce_to_2d(nmf_reduction)
+
+            tfidf_embeddings = pd.DataFrame(data, index=df["post link"])
+            tfidf_embeddings.to_pickle(self.tfidf_filepath)
+                
+        else:
+            tfidf_embeddings = pd.read_pickle(self.tfidf_filepath)
+        
+        return tfidf_embeddings
 
 
     def vectorize(self, df, columns=["title", "text"]):
@@ -104,9 +111,6 @@ class Topic_Modeler:
         self.cluster_model.fit(reduction)
         return self.cluster_model.labels_
     
-
-
-
 
 
 def get_embeddings(df):
