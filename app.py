@@ -32,7 +32,8 @@ with cntr:
             open_ai_clusters = True
 
 if open_ai_clusters:
-    lg.expore_topics(cntr, chart_df, "openai")
+    filename = "contractortalk-posts-OpenAI-embeddings.csv"
+    lg.expore_topics(cntr, chart_df, filename)
 
     _, cntr, _ = st.columns([2,6,2])
     with cntr:
@@ -41,4 +42,5 @@ if open_ai_clusters:
         tfidf_clusters = True
 
 if tfidf_clusters:
-    lg.expore_topics(cntr, chart_df, "tfidf")
+    filename = "contractortalk-posts-TFIDF-embeddings.csv"
+    lg.expore_topics(cntr, chart_df, filename)

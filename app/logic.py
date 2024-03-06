@@ -182,14 +182,14 @@ def scatter_plot(chart_df, title):
     st.altair_chart(chart, use_container_width=True)
 
 
-def expore_topics(center_column, chart_df, key):
+def expore_topics(center_column, chart_df, filename):
     with center_column:
         # label = "Choose a Topic to Explore"
         col1, _, col2 = st.columns([2,1,1])
         with col1:
             label = "Read through the posts that have been clustered together."
             options = chart_df["Topic Label"].value_counts().index
-            selection = st.selectbox(label, sorted(options), key=f"sb-{key}")
+            selection = st.selectbox(label, sorted(options), key=f"sb-{filename}")
         
         display_df = chart_df[chart_df["Topic Label"] == selection].copy()
         display_df.reset_index(inplace=True)
@@ -198,8 +198,7 @@ def expore_topics(center_column, chart_df, key):
         display_df.set_index("title", inplace=True)
         with col2:
             st.write("")
-            filename = "contractortalk-posts-OpenAI-embeddings.csv"
-            download_dataframe_as_csv(display_df, filename, key)
+            download_dataframe_as_csv(display_df, filename, filename)
 
     display_df.drop(columns=["Topic Label"], inplace=True)    
     st.dataframe(display_df)

@@ -64,7 +64,7 @@ class TFIDF_Topic_Modeler:
     
 
     def reduce_to_2d(self, reduction):
-        umap_reducer = umap.UMAP(random_state=42)
+        umap_reducer = umap.UMAP(random_state=42, n_jobs=1)
         futher_reduction = umap_reducer.fit_transform(reduction)
         return futher_reduction
 
@@ -104,7 +104,7 @@ class Topic_Modeler:
 
 
     def reduce_dimensions(self):
-        self.umap_model = umap.UMAP(random_state=42)
+        self.umap_model = umap.UMAP(random_state=42, n_jobs=1)
         reduction = self.umap_model.fit_transform(self.embeddings.values)
         return reduction
     
