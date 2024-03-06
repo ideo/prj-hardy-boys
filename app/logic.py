@@ -69,6 +69,10 @@ def dataframe_selector():
         search_terms = sorted(list(set(chain.from_iterable(search_terms))))
         embeddings_filename = "+".join(search_terms) + ".pkl"
 
+        # Lastly, drop any rows if the text field is empty. These posts
+        # tend to just be pictures.
+        df = df[df["text"].notnull()]
+
         return df, embeddings_filename
     return None, None
 
@@ -168,7 +172,7 @@ def scatter_plot(chart_df, title):
                 ),
         # color=alt.Color("Topic Label:N", legend=alt.Legend(orient="bottom")),
         color=alt.Color("Topic Label:N"),
-        href="url",
+        href="url:N",
         tooltip=["title", "text"],
     ).properties(title=title)
     st.write("")
