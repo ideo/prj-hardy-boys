@@ -3,7 +3,7 @@ scraper:
   - When ready, hit scrape. The app will first grab each page of search results, and then go back and scrape each post from those pages. Enjoy!
 
 analyze:
-  - Here, we will attempt to cluster posts togetether based on their similarity. We'll first try a sophisticated method, requesting embedding vectors from OpenAI. These are the same numerical representations that power ChatGPT.
+  - Here, we will attempt to cluster posts together based on their similarity. We'll first try a sophisticated method, requesting embedding vectors from OpenAI. These are the same numerical representations that power ChatGPT.
   - We'll also compare those results to a more basic technique, creating vectors that count how often a word appears in a post versus how often it appears in all posts.
 
 tfidf:
