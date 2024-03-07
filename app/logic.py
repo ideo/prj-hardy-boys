@@ -177,7 +177,10 @@ def scatter_plot(chart_df, title):
         color=alt.Color("Topic Label:N"),
         href="url:N",
         tooltip=["title", "text"],
-    ).properties(title=title)
+    ).properties(title={
+        "text": title,
+        "subtitle": "Command-click (Mac) or control-click (PC) on a dot to open that post in a new tab"
+        })
     st.write("")
     st.altair_chart(chart, use_container_width=True)
 
