@@ -201,7 +201,7 @@ def expore_topics(center_column, chart_df, filename):
             download_dataframe_as_csv(display_df, filename, filename)
 
     display_df.drop(columns=["Topic Label"], inplace=True)    
-    st.dataframe(display_df)
+    st.dataframe(display_df, use_container_width=True)
 
 
 def download_dataframe_as_csv(df, filename, key):
